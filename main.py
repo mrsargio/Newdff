@@ -24,9 +24,9 @@ logger = logging.getLogger(__name__)
 class Config:
     def __init__(self):
         # Telegram API Configuration - Replace with your credentials
-        self.API_ID = int(os.getenv('API_ID', 'your_api_id_here'))
-        self.API_HASH = os.getenv('API_HASH', 'your_api_hash_here')
-        self.BOT_TOKEN = os.getenv('BOT_TOKEN', 'your_bot_token_here')
+        self.API_ID = int(os.getenv('API_ID', '24250238'))
+        self.API_HASH = os.getenv('API_HASH', 'cb3f118ce5553dc140127647edcf3720')
+        self.BOT_TOKEN = os.getenv('BOT_TOKEN', '6047785902:AAE59KTfmhRvF8sUSYIzl9wcGnm4FLXiWDk')
         
         # Create necessary directories
         os.makedirs('uploads', exist_ok=True)
