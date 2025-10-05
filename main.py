@@ -9,6 +9,8 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters as tg_filters, CallbackQueryHandler, ContextTypes
+import nest_asyncio
+nest_asyncio.apply()  # Colab / Jupyter friendly
 
 # Configure logging
 logging.basicConfig(
@@ -1152,85 +1154,93 @@ class TelegramTestBot:
                 await help_command(update, context)
         
         # Add handlers
-        application.add_handler(CommandHandler("start", start))
-        application.add_handler(CommandHandler("help", help_command))
-        application.add_handler(CommandHandler("generate", start))
-        application.add_handler(MessageHandler(tg_filters.Document.ALL, handle_document))
-        application.add_handler(CallbackQueryHandler(button_handler))
+application.add_handler(CommandHandler("start", start))
+application.add_handler(CommandHandler("help", help_command))
+application.add_handler(CommandHandler("generate", start))
+application.add_handler(MessageHandler(tg_filters.Document.ALL, handle_document))
+application.add_handler(CallbackQueryHandler(button_handler))
+
+logger.info("Starting python-telegram-bot...")
+
+# Colab/Jupyter friendly polling
+application.start_polling()
+application.idle()
+
+
+async def process_telegram_document(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Process document for python-telegram-bot"""
+    try:
+        user_id = update.effective_user.id
+        document = update.message.document
         
-        logger.info("Starting python-telegram-bot...")
-        await application.run_polling()
-    
-    async def process_telegram_document(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Process document for python-telegram-bot"""
-        try:
-            user_id = update.effective_user.id
-            document = update.message.document
-            
-            if not (document.mime_type == 'application/json' or document.file_name.endswith('.json')):
-                await update.message.reply_text("❌ Please send a valid JSON file.")
-                return
-            
-            msg = await update.message.reply_text("📥 Downloading your file...")
-            
-            # Download file
-            file = await context.bot.get_file(document.file_id)
-            file_path = f"temp_{user_id}.json"
-            await file.download_to_drive(file_path)
-            
-            # Read JSON
-            async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
-                content = await f.read()
-                json_data = json.loads(content)
-            
-            await msg.edit_text("🎨 Generating premium test series...")
-            
-            # Generate HTML
-            html_content = self.test_generator.generate_premium_html_test(
-                json_data, user_id, theme="dark", device="desktop"
-            )
-            
-            # Save HTML
-            output_file = f"test_series_{user_id}_{int(datetime.now().timestamp())}.html"
-            async with aiofiles.open(output_file, 'w', encoding='utf-8') as f:
-                await f.write(html_content)
-            
-            await msg.edit_text("📤 Sending your premium test series...")
-            
-            # Send file
-            await update.message.reply_document(
-                document=open(output_file, 'rb'),
-                filename=f"Premium_Test_Series.html",
-                caption=f"""
-                🚀 **Premium Test Series Ready!**
+        if not (document.mime_type == 'application/json' or document.file_name.endswith('.json')):
+            await update.message.reply_text("❌ Please send a valid JSON file.")
+            return
+        
+        msg = await update.message.reply_text("📥 Downloading your file...")
+        
+        # Download file
+        file = await context.bot.get_file(document.file_id)
+        file_path = f"temp_{user_id}.json"
+        await file.download_to_drive(file_path)
+        
+        # Read JSON
+        async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
+            content = await f.read()
+            json_data = json.loads(content)
+        
+        await msg.edit_text("🎨 Generating premium test series...")
+        
+        # Generate HTML
+        html_content = self.test_generator.generate_premium_html_test(
+            json_data, user_id, theme="dark", device="desktop"
+        )
+        
+        # Save HTML
+        output_file = f"test_series_{user_id}_{int(datetime.now().timestamp())}.html"
+        async with aiofiles.open(output_file, 'w', encoding='utf-8') as f:
+            await f.write(html_content)
+        
+        await msg.edit_text("📤 Sending your premium test series...")
+        
+        # Send file
+        await update.message.reply_document(
+            document=open(output_file, 'rb'),
+            filename=f"Premium_Test_Series.html",
+            caption=f"""
+            🚀 **Premium Test Series Ready!**
 
-                ✨ **Features:**
-                • 🎨 Dark/Light Mode Toggle
-                • 📱 Mobile/Desktop Views  
-                • ✅ Green Highlight for Correct Answers
-                • ⏱️ Timer & Auto-Submit
-                • 📊 Smart Scoring
-                • 💡 Detailed Solutions
+            ✨ **Features:**
+            • 🎨 Dark/Light Mode Toggle
+            • 📱 Mobile/Desktop Views  
+            • ✅ Green Highlight for Correct Answers
+            • ⏱️ Timer & Auto-Submit
+            • 📊 Smart Scoring
+            • 💡 Detailed Solutions
 
-                🎯 **Questions:** {len(json_data['data'])}
-                ⏰ **Time:** 3 Hours
-                📅 **Generated:** {datetime.now().strftime('%d/%m/%Y %H:%M')}
+            🎯 **Questions:** {len(json_data['data'])}
+            ⏰ **Time:** 3 Hours
+            📅 **Generated:** {datetime.now().strftime('%d/%m/%Y %H:%M')}
 
-                **📖 Open in browser and start testing!**
-                """,
-                parse_mode='Markdown'
-            )
-            
-            # Cleanup
-            os.remove(file_path)
-            os.remove(output_file)
-            await msg.delete()
-            
-        except Exception as e:
-            logger.error(f"Error processing document: {e}")
-            await update.message.reply_text(f"❌ Error: {str(e)}")
+            **📖 Open in browser and start testing!**
+            """,
+            parse_mode='Markdown'
+        )
+        
+        # Cleanup
+        os.remove(file_path)
+        os.remove(output_file)
+        await msg.delete()
+        
+    except Exception as e:
+        logger.error(f"Error processing document: {e}")
+        await update.message.reply_text(f"❌ Error: {str(e)}")
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    import nest_asyncio
+    nest_asyncio.apply()  # Colab/Jupyter friendly
+
     bot = TelegramTestBot()
-    asyncio.run(bot.start_bot())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(bot.start_bot())
