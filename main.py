@@ -20,9 +20,9 @@ class TestSeriesGenerator:
     
     def generate_html_test(self, json_data, user_id):
         """Generate professional HTML test series from JSON data"""
-        
+         
         test_html = f"""
-        <!DOCTYPE html>
+        <!DOCTYPE html>🫵🥹
         <html lang="hi">
         <head>
             <meta charset="UTF-8">
