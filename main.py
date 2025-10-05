@@ -1230,10 +1230,8 @@ class TelegramTestBot:
             logger.error(f"Error processing document: {e}")
             await update.message.reply_text(f"❌ Error: {str(e)}")
 
-async def main():
-    """Main function to start the bot"""
-    bot = TelegramTestBot()
-    await bot.start_bot()
+import asyncio
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    bot = TelegramTestBot()
+    asyncio.run(bot.start_bot())
