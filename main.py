@@ -1231,5 +1231,6 @@ class TelegramTestBot:
             await update.message.reply_text(f"❌ Error: {str(e)}")
 
 if __name__ == "__main__":
+    asyncio.run(main())
     bot = TelegramTestBot()
     asyncio.run(bot.start_bot())
