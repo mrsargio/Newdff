@@ -1033,7 +1033,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 def main() -> None:
     """Start the bot."""
     # Replace 'YOUR_BOT_TOKEN' with your actual bot token
-    TOKEN = "YOUR_BOT_TOKEN_HERE"
+    TOKEN = "6047785902:AAE59KTfmhRvF8sUSYIzl9wcGnm4FLXiWDk"
     
     # Create application
     application = Application.builder().token(TOKEN).build()
